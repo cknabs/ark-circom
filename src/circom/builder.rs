@@ -5,9 +5,11 @@ use super::{CircomCircuit, R1CS};
 
 use num_bigint::BigInt;
 use std::collections::HashMap;
+use std::io::Read;
 
 use crate::{circom::R1CSFile, witness::WitnessCalculator};
 use color_eyre::Result;
+use crate::input::input::R1CSInputs;
 
 #[derive(Clone, Debug)]
 pub struct CircomBuilder<E: PairingEngine> {
@@ -43,6 +45,15 @@ impl<E: PairingEngine> CircomBuilder<E> {
         Self {
             cfg,
             inputs: HashMap::new(),
+        }
+    }
+
+    pub fn push_inputs<R: Read>(&mut self, reader: R) {
+        let r1cs_inputs = R1CSInputs::new(reader).unwrap();
+        for (name, value) in r1cs_inputs.inputs.iter() {
+            for v in value {
+                self.push_input(name.to_string(), v.clone());
+            }
         }
     }
 
